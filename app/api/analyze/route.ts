@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAnalysisReport } from "./openai";
 
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url") || "";
 
