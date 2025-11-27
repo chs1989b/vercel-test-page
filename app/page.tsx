@@ -1,6 +1,7 @@
 
 "use client";
 import React, { useState } from "react";
+import BarChart from "../components/BarChart";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -79,25 +80,17 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: '1rem' }}>
-                  {/* 간단한 막대그래프 (inline SVG) */}
-                  <div style={{ display: 'grid', gap: '0.75rem' }}>
-                    {[
-                      { label: '로딩속도', value: result.performanceScore, color: '#06b6d4' },
-                      { label: 'SEO', value: result.seoScore, color: '#60a5fa' },
-                      { label: '접근성', value: result.accessibilityScore, color: '#34d399' },
-                      { label: 'Best Practices', value: result.bestPracticesScore, color: '#f97316' },
-                    ].map((item: any) => (
-                      <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ width: 110, color: '#cbd5e1' }}>{item.label}</div>
-                        <div style={{ flex: 1, background: '#0b1220', borderRadius: 6, height: 18, position: 'relative', border: '1px solid #1f2937' }}>
-                          <div style={{ width: `${item.value}%`, height: '100%', background: item.color, borderRadius: 6 }} />
-                        </div>
-                        <div style={{ width: 48, textAlign: 'right', color: '#cbd5e1' }}>{item.value}</div>
-                      </div>
-                    ))}
+                  <div style={{ marginTop: '1rem' }}>
+                    {/* Chart.js Bar 차트 */}
+                    <div style={{ background: '#071029', padding: '0.75rem', borderRadius: 8 }}>
+                      <BarChart
+                        scores={{
+                          labels: ['로딩속도', 'SEO', '접근성', 'Best Practices'],
+                          values: [result.performanceScore, result.seoScore, result.accessibilityScore, result.bestPracticesScore],
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
               </div>
 
               <div style={{ flex: 1, minWidth: 300 }}>
