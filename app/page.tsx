@@ -63,18 +63,57 @@ export default function Home() {
         {result && (
           <section style={styles.section}>
             <h2 style={styles.sectionTitle}>분석 결과</h2>
-            <div style={{ fontSize: "1.1rem", lineHeight: 1.7 }}>
-              <p><strong>사이트:</strong> {result.url}</p>
-              <p><strong>로딩속도:</strong> {result.performanceScore}점</p>
-              <p><strong>SEO:</strong> {result.seoScore}점</p>
-              <p><strong>접근성:</strong> {result.accessibilityScore}점</p>
-              <p><strong>Best Practices:</strong> {result.bestPracticesScore}점</p>
-              <p><strong>분석 시간:</strong> {result.analyzedAt}</p>
-            </div>
-            <div style={{ marginTop: "1rem" }}>
-              <span style={{ fontWeight: "bold", color: result.totalScore > 80 ? "#34d399" : result.totalScore > 60 ? "#fbbf24" : "#f87171" }}>
-                총점: {result.totalScore} / 100
-              </span>
+
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 280 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p style={{ margin: 0 }}><strong>사이트:</strong> {result.url}</p>
+                    <p style={{ margin: 0 }}><strong>분석 시간:</strong> {result.analyzedAt}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: result.totalScore > 80 ? '#34d399' : result.totalScore > 60 ? '#fbbf24' : '#f87171' }}>
+                      {result.totalScore}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#94a3b8' }}>총점 /100</div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                  {/* 간단한 막대그래프 (inline SVG) */}
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    {[
+                      { label: '로딩속도', value: result.performanceScore, color: '#06b6d4' },
+                      { label: 'SEO', value: result.seoScore, color: '#60a5fa' },
+                      { label: '접근성', value: result.accessibilityScore, color: '#34d399' },
+                      { label: 'Best Practices', value: result.bestPracticesScore, color: '#f97316' },
+                    ].map((item: any) => (
+                      <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: 110, color: '#cbd5e1' }}>{item.label}</div>
+                        <div style={{ flex: 1, background: '#0b1220', borderRadius: 6, height: 18, position: 'relative', border: '1px solid #1f2937' }}>
+                          <div style={{ width: `${item.value}%`, height: '100%', background: item.color, borderRadius: 6 }} />
+                        </div>
+                        <div style={{ width: 48, textAlign: 'right', color: '#cbd5e1' }}>{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 300 }}>
+                <h3 style={{ marginTop: 0, color: '#a7f3d0' }}>상세 리포트</h3>
+                <div style={{ background: '#071029', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #23303f', color: '#e2e8f0', whiteSpace: 'pre-wrap' }}>
+                  {result.report}
+                </div>
+
+                <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', color: '#a7f3d0' }}>추천 항목 (요약)</h4>
+                <ul style={{ marginTop: 0, color: '#cbd5e1' }}>
+                  <li>이미지 최적화 및 CDN 적용으로 로딩속도 개선</li>
+                  <li>메타 태그 및 구조화된 데이터로 SEO 향상</li>
+                  <li>접근성 검사 도구로 키보드/스크린리더 지원 강화</li>
+                  <li>보안 헤더 및 코드 품질 검토로 Best Practices 개선</li>
+                </ul>
+              </div>
             </div>
           </section>
         )}
