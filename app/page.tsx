@@ -107,31 +107,41 @@ export default function Home() {
                 </div>
 
                 <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', color: '#a7f3d0' }}>추천 항목 (요약)</h4>
-                {result.reportItems && result.reportItems.length > 0 ? (
-                  <ul style={{ marginTop: 0, color: '#cbd5e1' }}>
-                    {result.reportItems.map((it: any, i: number) => {
-                      const color = it.priority === 'high' ? '#f87171' : it.priority === 'medium' ? '#fbbf24' : '#60a5fa';
-                      return (
-                        <li key={i} style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                          <div style={{ width: 10, height: 10, borderRadius: 6, background: color, marginTop: 6 }} />
-                          <div>
-                            <div style={{ fontWeight: 600, color: '#e2e8f0' }}>
-                              <ReactMarkdown rehypePlugins={[rehypeSanitize]} components={{strong: ({node, ...props}) => <strong style={{color: '#fff'}} {...props} />}}>{it.text}</ReactMarkdown>
-                            </div>
-                            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>우선순위: {it.priority}</div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <ul style={{ marginTop: 0, color: '#cbd5e1' }}>
-                    <li>이미지 최적화 및 CDN 적용으로 로딩속도 개선</li>
-                    <li>메타 태그 및 구조화된 데이터로 SEO 향상</li>
-                    <li>접근성 검사 도구로 키보드/스크린리더 지원 강화</li>
-                    <li>보안 헤더 및 코드 품질 검토로 Best Practices 개선</li>
-                  </ul>
-                )}
+                {(() => {
+                  const items = result.reportItems || [];
+                  const keywords = /최적화|캐시|이미지|메타|SEO|접근성|보안|Best Practices|보안|캐싱|CDN|모바일|응답속도|로딩속도|속도/i;
+                  const actionable = items.filter((it: any) => it.priority === 'high' || keywords.test(it.text));
+
+                  if (actionable.length > 0) {
+                    return (
+                      <ul style={{ marginTop: 0, color: '#cbd5e1' }}>
+                        {actionable.map((it: any, i: number) => {
+                          const color = it.priority === 'high' ? '#f87171' : it.priority === 'medium' ? '#fbbf24' : '#60a5fa';
+                          return (
+                            <li key={i} style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                              <div style={{ width: 10, height: 10, borderRadius: 6, background: color, marginTop: 6 }} />
+                              <div>
+                                <div style={{ fontWeight: 600, color: '#e2e8f0' }}>
+                                  <ReactMarkdown rehypePlugins={[rehypeSanitize]} components={{strong: ({node, ...props}) => <strong style={{color: '#fff'}} {...props} />}}>{it.text}</ReactMarkdown>
+                                </div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>우선순위: {it.priority}</div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    );
+                  }
+
+                  return (
+                    <ul style={{ marginTop: 0, color: '#cbd5e1' }}>
+                      <li>이미지 최적화 및 CDN 적용으로 로딩속도 개선</li>
+                      <li>메타 태그 및 구조화된 데이터로 SEO 향상</li>
+                      <li>접근성 검사 도구로 키보드/스크린리더 지원 강화</li>
+                      <li>보안 헤더 및 코드 품질 검토로 Best Practices 개선</li>
+                    </ul>
+                  );
+                })()}
               </div>
             </div>
           </section>
