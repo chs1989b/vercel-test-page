@@ -1,9 +1,10 @@
 
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import BarChart from "../components/BarChart";
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import html2pdf from 'html2pdf.js';
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -67,6 +68,29 @@ export default function Home() {
           <section style={styles.section}>
             <h2 style={styles.sectionTitle}>분석 결과</h2>
 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('report-root');
+                  if (!el) return;
+                  const filename = (() => {
+                    try { return `${new URL(result.url).hostname}-audit.pdf`; } catch { return 'audit-report.pdf'; }
+                  })();
+                  const opt: any = {
+                    margin: 10,
+                    filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                  };
+                  html2pdf().set(opt).from(el).save();
+                }}
+                style={{ padding: '0.5rem 0.9rem', background: '#0f766e', color: '#a7f3d0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
+              >
+                PDF 다운로드
+              </button>
+            </div>
+
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 280 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -97,7 +121,7 @@ export default function Home() {
 
               <div style={{ flex: 1, minWidth: 300 }}>
                 <h3 style={{ marginTop: 0, color: '#a7f3d0' }}>상세 리포트</h3>
-                <div style={{ background: '#071029', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #23303f', color: '#e2e8f0' }}>
+                <div id="report-root" style={{ background: '#071029', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #23303f', color: '#e2e8f0' }}>
                   {/* Markdown 렌더링 (bold 등 마크업 처리) */}
                   <ReactMarkdown rehypePlugins={[rehypeSanitize]} components={{
                     p: ({node, ...props}) => <p style={{ margin: '0 0 0.5rem', color: '#e2e8f0' }} {...props} />,
