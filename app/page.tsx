@@ -2,6 +2,8 @@
 "use client";
 import React, { useState } from "react";
 import BarChart from "../components/BarChart";
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -97,15 +99,11 @@ export default function Home() {
                 <h3 style={{ marginTop: 0, color: '#a7f3d0' }}>상세 리포트</h3>
                 <div style={{ background: '#071029', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #23303f', color: '#e2e8f0' }}>
                   {/* Markdown 렌더링 (bold 등 마크업 처리) */}
-                  <ReactMarkdown
-                    children={result.report}
-                    rehypePlugins={[]}
-                    components={{
-                      p: ({node, ...props}) => <p style={{ margin: '0 0 0.5rem', color: '#e2e8f0' }} {...props} />,
-                      strong: ({node, ...props}) => <strong style={{ color: '#fff' }} {...props} />,
-                      li: ({node, ...props}) => <li style={{ marginBottom: '0.5rem' }} {...props} />,
-                    }}
-                  />
+                  <ReactMarkdown rehypePlugins={[rehypeSanitize]} components={{
+                    p: ({node, ...props}) => <p style={{ margin: '0 0 0.5rem', color: '#e2e8f0' }} {...props} />,
+                    strong: ({node, ...props}) => <strong style={{ color: '#fff' }} {...props} />,
+                    li: ({node, ...props}) => <li style={{ marginBottom: '0.5rem' }} {...props} />,
+                  }}>{result.report}</ReactMarkdown>
                 </div>
 
                 <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', color: '#a7f3d0' }}>추천 항목 (요약)</h4>
@@ -118,7 +116,7 @@ export default function Home() {
                           <div style={{ width: 10, height: 10, borderRadius: 6, background: color, marginTop: 6 }} />
                           <div>
                             <div style={{ fontWeight: 600, color: '#e2e8f0' }}>
-                              <ReactMarkdown children={it.text} rehypePlugins={[]} components={{strong: ({node, ...props}) => <strong style={{color: '#fff'}} {...props} />}} />
+                              <ReactMarkdown rehypePlugins={[rehypeSanitize]} components={{strong: ({node, ...props}) => <strong style={{color: '#fff'}} {...props} />}}>{it.text}</ReactMarkdown>
                             </div>
                             <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>우선순위: {it.priority}</div>
                           </div>
