@@ -1,56 +1,96 @@
+
+import React, { useState } from "react";
+
 export default function Home() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState("");
+
+  async function analyzeSite(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setResult(null);
+    try {
+      const start = performance.now();
+      // 프록시 서버 필요: CORS 우회. 여기선 fetch만 예시로 사용
+      const res = await fetch(`/api/analyze?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      setResult(data);
+    } catch (err: any) {
+      setError("사이트 분석 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <h1 style={styles.title}>🚀 Vercel 테스트 페이지</h1>
-        <p style={styles.subtitle}>Next.js로 만든 간단한 테스트 페이지입니다</p>
+        <h1 style={styles.title}>🛒 쇼핑몰 사이트 분석기</h1>
+        <p style={styles.subtitle}>URL을 입력하면 해당 쇼핑몰의 시스템 상태(로딩속도, SEO 등)를 분석해 점수로 보여줍니다.</p>
       </header>
 
       <main style={styles.main}>
         <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>✨ 기능</h2>
+          <form onSubmit={analyzeSite} style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <input
+              type="url"
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder="쇼핑몰 URL을 입력하세요 (예: https://store.com)"
+              style={{ flex: 1, padding: "0.75rem", borderRadius: "0.375rem", border: "1px solid #0d9488", fontSize: "1rem" }}
+              required
+            />
+            <button
+              type="submit"
+              style={{ padding: "0.75rem 1.5rem", backgroundColor: "#0f766e", color: "#a7f3d0", border: "none", borderRadius: "0.375rem", cursor: "pointer", fontWeight: "bold" }}
+              disabled={loading}
+            >
+              {loading ? "분석 중..." : "분석하기"}
+            </button>
+          </form>
+        </section>
+
+        {error && (
+          <section style={styles.section}>
+            <p style={{ color: "#f87171" }}>{error}</p>
+          </section>
+        )}
+
+        {result && (
+          <section style={styles.section}>
+            <h2 style={styles.sectionTitle}>분석 결과</h2>
+            <div style={{ fontSize: "1.1rem", lineHeight: 1.7 }}>
+              <p><strong>사이트:</strong> {result.url}</p>
+              <p><strong>로딩속도:</strong> {result.performanceScore}점</p>
+              <p><strong>SEO:</strong> {result.seoScore}점</p>
+              <p><strong>접근성:</strong> {result.accessibilityScore}점</p>
+              <p><strong>Best Practices:</strong> {result.bestPracticesScore}점</p>
+              <p><strong>분석 시간:</strong> {result.analyzedAt}</p>
+            </div>
+            <div style={{ marginTop: "1rem" }}>
+              <span style={{ fontWeight: "bold", color: result.totalScore > 80 ? "#34d399" : result.totalScore > 60 ? "#fbbf24" : "#f87171" }}>
+                총점: {result.totalScore} / 100
+              </span>
+            </div>
+          </section>
+        )}
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>분석 안내</h2>
           <ul style={styles.list}>
-            <li>⚡ Next.js 최신 버전</li>
-            <li>📱 반응형 디자인</li>
-            <li>🚀 Vercel에 배포됨</li>
-            <li>💻 TypeScript 지원</li>
+            <li>사이트의 <strong>로딩속도</strong>, <strong>SEO</strong>, <strong>접근성</strong>, <strong>Best Practices</strong>를 점수로 분석합니다.</li>
+            <li>점수는 0~100점 기준으로 표시됩니다.</li>
+            <li>실제 분석은 Lighthouse API 또는 서버에서 처리해야 합니다.</li>
+            <li>프론트엔드에서는 예시 결과만 표시합니다.</li>
           </ul>
-        </section>
-
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>🔗 유용한 링크</h2>
-          <div style={styles.links}>
-            <a 
-              href="https://nextjs.org" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={styles.link}
-            >
-              Next.js 문서
-            </a>
-            <a 
-              href="https://vercel.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={styles.link}
-            >
-              Vercel
-            </a>
-          </div>
-        </section>
-
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>📊 정보</h2>
-          <div style={styles.info}>
-            <p><strong>배포 시간:</strong> {new Date().toLocaleString('ko-KR')}</p>
-            <p><strong>환경:</strong> Production</p>
-            <p><strong>플랫폼:</strong> Vercel</p>
-          </div>
         </section>
       </main>
 
       <footer style={styles.footer}>
-        <p>© 2025 Vercel 테스트 페이지 - 배포 테스트</p>
+        <p>© 2025 쇼핑몰 사이트 분석기 - vercel 배포</p>
       </footer>
     </div>
   );
