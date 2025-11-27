@@ -4,7 +4,6 @@ import React, { useState, useRef } from "react";
 import BarChart from "../components/BarChart";
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
-import html2pdf from 'html2pdf.js';
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -70,7 +69,7 @@ export default function Home() {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <button
-                onClick={() => {
+                onClick={async () => {
                   const el = document.getElementById('report-root');
                   if (!el) return;
                   const filename = (() => {
@@ -83,6 +82,8 @@ export default function Home() {
                     html2canvas: { scale: 2, useCORS: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                   };
+                  const mod: any = await import('html2pdf.js');
+                  const html2pdf = mod.default || mod;
                   html2pdf().set(opt).from(el).save();
                 }}
                 style={{ padding: '0.5rem 0.9rem', background: '#0f766e', color: '#a7f3d0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
