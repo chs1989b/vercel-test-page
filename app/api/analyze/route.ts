@@ -19,6 +19,51 @@ export async function GET(request: Request) {
   } catch (e) {
     report = "리포트 생성 중 오류가 발생했습니다.";
   }
+  // 간단한 파싱 로직: 리포트에서 개선 항목을 추출하고 우선순위 지정
+  function parseReportToItems(text: string) {
+    if (!text) return [];
+    const lines = text.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
+    const candidates: string[] = [];
+
+    // 1) '-' 로 시작하는 라인 또는 숫자 리스트 항목 추출
+    for (const line of lines) {
+      if (/^[-•\d]/.test(line) || line.includes(':')) {
+        // '-' 또는 '1.' 또는 ' - 설명' 등
+        // 제거할 접두부
+        const cleaned = line.replace(/^[-•\d\.\)\s]+/, '').trim();
+        if (cleaned.length > 10) candidates.push(cleaned);
+      }
+    }
+
+    // 2) 후보가 적으면 문장 단위로 분리
+    if (candidates.length === 0) {
+      const sentences = text.split(/[\.\n]\s*/).map(s => s.trim()).filter(Boolean);
+      for (const s of sentences) {
+        if (s.length > 20) candidates.push(s);
+      }
+    }
+
+    const highKeywords = ['로딩', '이미지', '캐싱', '속도', '지연', '렌더', '지연', '대기'];
+    const medKeywords = ['SEO', '메타', '키워드', '검색', '구조화', '검색엔진', 'title', 'description'];
+    const accessibilityKeywords = ['접근성', '스크린', '키보드', '대체텍스트', 'alt'];
+    const securityKeywords = ['보안', 'SSL', '인증', '헤더', '취약점', '취약'];
+
+    function decidePriority(item: string) {
+      const t = item.toLowerCase();
+      for (const k of highKeywords) if (t.includes(k)) return 'high';
+      for (const k of securityKeywords) if (t.includes(k)) return 'high';
+      for (const k of medKeywords) if (t.includes(k.toLowerCase())) return 'medium';
+      for (const k of accessibilityKeywords) if (t.includes(k)) return 'medium';
+      return 'low';
+    }
+
+    const items = candidates.map(i => ({ text: i, priority: decidePriority(i) }));
+    // 중복 제거
+    const unique = Array.from(new Map(items.map(it => [it.text, it])).values());
+    return unique;
+  }
+
+  const reportItems = parseReportToItems(report);
 
   return NextResponse.json({
     url,
@@ -29,5 +74,6 @@ export async function GET(request: Request) {
     totalScore,
     analyzedAt: new Date().toLocaleString("ko-KR"),
     report,
+    reportItems,
   });
 }
