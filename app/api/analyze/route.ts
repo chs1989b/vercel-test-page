@@ -86,7 +86,8 @@ export async function GET(request: Request) {
       const xff = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
       const clientIp = xff ? xff.split(',')[0].trim() : 'unknown';
 
-      const { error } = await supabase.from('analyze_history').insert([{
+      // 기본 페이로드(모든 필드 포함)
+      const payloadFull: any = {
         url,
         email,
         client_ip: clientIp,
@@ -98,12 +99,33 @@ export async function GET(request: Request) {
         report,
         report_items: JSON.stringify(reportItems || []),
         analyzed_at: analyzedAt,
-      }]);
+      };
 
+      // 시도 1: 전체 필드로 삽입
+      let { error } = await supabase.from('analyze_history').insert([payloadFull]);
       if (error) {
-        insertionStatus = `error: ${error.message}`;
+        // 컬럼 없음 관련 에러라면 client_ip / email 제거 후 재시도
+        const msg = String(error.message || error);
         // eslint-disable-next-line no-console
-        console.error('Supabase insert error:', error);
+        console.warn('Initial Supabase insert error, will try fallback insert without client fields:', msg);
+
+        if (/Could not find the '\w+' column|column .* does not exist|unknown column/i.test(msg) || msg.includes("client_ip") || msg.includes("email")) {
+          const payloadFallback = { ...payloadFull };
+          delete payloadFallback.client_ip;
+          delete payloadFallback.email;
+          const { error: err2 } = await supabase.from('analyze_history').insert([payloadFallback]);
+          if (err2) {
+            insertionStatus = `error: ${err2.message}`;
+            // eslint-disable-next-line no-console
+            console.error('Fallback Supabase insert error:', err2);
+          } else {
+            insertionStatus = 'inserted-fallback-no-client-fields';
+          }
+        } else {
+          insertionStatus = `error: ${msg}`;
+          // eslint-disable-next-line no-console
+          console.error('Supabase insert error:', error);
+        }
       } else {
         insertionStatus = 'inserted';
       }
