@@ -1,7 +1,5 @@
 import { OpenAI } from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export async function getAnalysisReport({ url, performanceScore, seoScore, accessibilityScore, bestPracticesScore, totalScore }: {
   url: string;
   performanceScore: number;
@@ -29,6 +27,13 @@ export async function getAnalysisReport({ url, performanceScore, seoScore, acces
 - 총점: ${totalScore}
 
 출력은 한국어 마크다운으로 주세요.`;
+  // 환경변수에 OPENAI_API_KEY가 없으면 빌드/로컬에서 에러가 나지 않도록 폴백 리포트를 반환합니다.
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return `# 간단 분석 리포트 (샘플)\n\n**요약/전체 평가**\n- 사이트: ${url || '알 수 없음'}\n- 총점: ${totalScore}/100\n\n**핵심 문제(우선순위)**\n- 이미지 최적화 부재 (우선순위: 높음)\n- 캐시 정책 미설정 (우선순위: 높음)\n\n**권장 개선사항**\n- 이미지 최적화 및 WebP/AVIF 변환\n- CDN 적용 및 캐시 정책 수립\n\n(실제 OpenAI 리포트는 'OPENAI_API_KEY' 환경변수를 설정하면 생성됩니다.)`;
+  }
+
+  const openai = new OpenAI({ apiKey });
 
   const completion = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
