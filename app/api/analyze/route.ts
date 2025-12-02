@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAnalysisReport } from "./openai";
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -64,6 +65,37 @@ export async function GET(request: Request) {
   }
 
   const reportItems = parseReportToItems(report);
+
+  const analyzedAt = new Date().toISOString();
+
+  // Supabase에 이력 저장 (환경변수에 SUPABASE_URL 및 SUPABASE_KEY 설정 필요)
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_KEY;
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: { persistSession: false },
+      });
+
+      // 테이블명: analyze_history (정의된 스키마 참조)
+      await supabase.from('analyze_history').insert([{
+        url,
+        performance_score: performanceScore,
+        seo_score: seoScore,
+        accessibility_score: accessibilityScore,
+        best_practices_score: bestPracticesScore,
+        total_score: totalScore,
+        report,
+        report_items: JSON.stringify(reportItems || []),
+        analyzed_at: analyzedAt,
+      }]);
+    }
+  } catch (e) {
+    // 실패시에도 API 응답에는 영향 주지 않음
+    // 서버 로그용 콘솔 출력
+    // eslint-disable-next-line no-console
+    console.error('Failed to insert analyze history to Supabase', e);
+  }
 
   return NextResponse.json({
     url,
