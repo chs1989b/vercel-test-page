@@ -2,7 +2,9 @@
 
 CREATE TABLE IF NOT EXISTS public.analyze_history (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  email text,
   url text,
+  client_ip text,
   performance_score integer,
   seo_score integer,
   accessibility_score integer,

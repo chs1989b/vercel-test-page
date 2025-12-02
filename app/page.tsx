@@ -10,6 +10,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+   const [email, setEmail] = useState("");
 
   async function analyzeSite(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +46,14 @@ export default function Home() {
               onChange={e => setUrl(e.target.value)}
               placeholder="쇼핑몰 URL을 입력하세요 (예: https://store.com)"
               style={{ flex: 1, padding: "0.75rem", borderRadius: "0.375rem", border: "1px solid #0d9488", fontSize: "1rem" }}
+              required
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="연락용 이메일을 입력하세요 (예: you@example.com)"
+              style={{ width: 320, padding: "0.75rem", borderRadius: "0.375rem", border: "1px solid #0d9488", fontSize: "1rem" }}
               required
             />
             <button

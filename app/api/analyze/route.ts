@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url") || "";
+  const email = searchParams.get("email") || null;
 
   // 예시 점수 생성
   const performanceScore = Math.floor(Math.random() * 41) + 60; // 60~100
@@ -81,8 +82,14 @@ export async function GET(request: Request) {
       });
 
       // 테이블명: analyze_history (정의된 스키마 참조)
+      // 클라이언트 IP 추출 (Vercel, 프록시 환경에서 X-Forwarded-For 사용)
+      const xff = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+      const clientIp = xff ? xff.split(',')[0].trim() : 'unknown';
+
       const { error } = await supabase.from('analyze_history').insert([{
         url,
+        email,
+        client_ip: clientIp,
         performance_score: performanceScore,
         seo_score: seoScore,
         accessibility_score: accessibilityScore,
