@@ -104,27 +104,21 @@ export async function GET(request: Request) {
       // 시도 1: 전체 필드로 삽입
       let { error } = await supabase.from('analyze_history').insert([payloadFull]);
       if (error) {
-        // 컬럼 없음 관련 에러라면 client_ip / email 제거 후 재시도
         const msg = String(error.message || error);
         // eslint-disable-next-line no-console
-        console.warn('Initial Supabase insert error, will try fallback insert without client fields:', msg);
+        console.warn('Initial Supabase insert error, attempting fallback insert without client fields:', msg);
 
-        if (/Could not find the '\w+' column|column .* does not exist|unknown column/i.test(msg) || msg.includes("client_ip") || msg.includes("email")) {
-          const payloadFallback = { ...payloadFull };
-          delete payloadFallback.client_ip;
-          delete payloadFallback.email;
-          const { error: err2 } = await supabase.from('analyze_history').insert([payloadFallback]);
-          if (err2) {
-            insertionStatus = `error: ${err2.message}`;
-            // eslint-disable-next-line no-console
-            console.error('Fallback Supabase insert error:', err2);
-          } else {
-            insertionStatus = 'inserted-fallback-no-client-fields';
-          }
-        } else {
-          insertionStatus = `error: ${msg}`;
+        // 항상 client/email 필드 제외 후 재시도 (스키마 불일치에 관대하게 대응)
+        const payloadFallback = { ...payloadFull };
+        delete payloadFallback.client_ip;
+        delete payloadFallback.email;
+        const { error: err2 } = await supabase.from('analyze_history').insert([payloadFallback]);
+        if (err2) {
+          insertionStatus = `error: ${err2.message}`;
           // eslint-disable-next-line no-console
-          console.error('Supabase insert error:', error);
+          console.error('Fallback Supabase insert error:', err2);
+        } else {
+          insertionStatus = 'inserted-fallback-no-client-fields';
         }
       } else {
         insertionStatus = 'inserted';
