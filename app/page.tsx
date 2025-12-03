@@ -20,7 +20,8 @@ export default function Home() {
     try {
       const start = performance.now();
       // 프록시 서버 필요: CORS 우회. 여기선 fetch만 예시로 사용
-      const res = await fetch(`/api/analyze?url=${encodeURIComponent(url)}`);
+      const params = new URLSearchParams({ url, email });
+      const res = await fetch(`/api/analyze?${params.toString()}`);
       const data = await res.json();
       setResult(data);
     } catch (err: any) {
